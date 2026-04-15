@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AcademIQ — Smart Academic Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ══ LOGIN PAGE ══════════════════════════════════════════════════════════════ -->
+<div id="login-page" class="auth-screen">
+  <div class="auth-bg-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+  </div>
+  <div class="auth-box">
+    <div class="auth-brand">
+      <div class="brand-logo">AcademIQ<span class="dot">.</span></div>
+      <div class="brand-tagline">Smart Academic Performance Platform</div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <!-- Login Form -->
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="you@school.edu" value="student@school.edu" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" value="student123" required>
+      </div>
+      <div id="login-error" class="form-error" style="display:none"></div>
+      <button type="submit" class="btn-primary" id="login-btn">
+        <span class="btn-text">Sign In →</span>
+        <span class="btn-loading" style="display:none">Signing in...</span>
+      </button>
+    </form>
+
+    <!-- Register Form -->
+    <form id="register-form" style="display:none" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" placeholder="Your full name" required>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="you@school.edu" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="Min 6 characters" minlength="6" required>
+      </div>
+      <div class="form-group">
+        <label>Role</label>
+        <select id="reg-role">
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+        </select>
+      </div>
+      <div id="reg-error" class="form-error" style="display:none"></div>
+      <button type="submit" class="btn-primary">Create Account →</button>
+    </form>
+
+    <!-- Quick Demo Logins -->
+    <div class="demo-logins">
+      <p class="demo-label">Quick Demo Access</p>
+      <div class="demo-btns">
+        <button class="demo-btn" onclick="quickLogin('student@school.edu','student123')">
+          <span>🎓</span> Student
+        </button>
+        <button class="demo-btn" onclick="quickLogin('teacher@school.edu','teacher123')">
+          <span>📚</span> Teacher
+        </button>
+        <button class="demo-btn" onclick="quickLogin('admin@school.edu','admin123')">
+          <span>⚙️</span> Admin
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ════════════════════════════════════════════════════════════════ -->
+<div id="app" style="display:none">
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-name">AcademIQ</span>
+        <span class="brand-portal" id="brand-portal">Portal</span>
+      </div>
+      <div class="sidebar-user">
+        <div class="user-avatar" id="nav-avatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="nav-name">Loading...</div>
+          <div class="user-role" id="nav-role">Role</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="logout()">↩ Logout</button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <h1 class="page-title" id="page-title">Dashboard</h1>
+        </div>
+        <div class="topbar-right">
+          <div class="search-wrap">
+            <input class="topbar-search" placeholder="🔍 Search..." id="topbar-search">
+          </div>
+          <button class="notif-btn" onclick="navigateTo('notifications')" id="notif-btn">
+            🔔 <span class="notif-badge" id="notif-badge" style="display:none">0</span>
+          </button>
+          <div class="topbar-user" id="topbar-user-info"></div>
+        </div>
+      </header>
+
+      <!-- ── PAGE: Student Dashboard ── -->
+      <section class="page" id="page-dashboard">
+        <div class="stats-row" id="dashboard-stats"></div>
+        <div class="charts-2col">
+          <div class="card">
+            <div class="card-header"><h3>Performance Trend</h3><span class="card-sub">Monthly averages</span></div>
+            <canvas id="chart-trend" height="220"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Subject Radar</h3><span class="card-sub">You vs class average</span></div>
+            <canvas id="chart-radar" height="220"></canvas>
+          </div>
+        </div>
+        <div class="charts-2col">
+          <div class="card">
+            <div class="card-header"><h3>Subject Performance</h3></div>
+            <div class="table-wrap"><table id="tbl-subjects"><thead><tr><th>Subject</th><th>Score</th><th>Grade</th><th>Progress</th></tr></thead><tbody></tbody></table></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Recent Assignments</h3></div>
+            <div class="table-wrap"><table id="tbl-assignments"><thead><tr><th>Title</th><th>Subject</th><th>Score</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PAGE: Analytics ── -->
+      <section class="page" id="page-analytics">
+        <div class="charts-2col">
+          <div class="card">
+            <div class="card-header"><h3>Test Score Timeline</h3><span class="card-sub">All test scores this semester</span></div>
+            <canvas id="chart-tests" height="200"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Attendance by Month</h3></div>
+            <canvas id="chart-att-monthly" height="200"></canvas>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><h3>Your Score vs Class Average</h3></div>
+          <canvas id="chart-comparison" height="160"></canvas>
+        </div>
+        <div class="charts-2col">
+          <div class="card">
+            <div class="card-header"><h3>💪 Strong Subjects</h3></div>
+            <div id="strong-subjects-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>📈 Areas to Improve</h3></div>
+            <div id="weak-subjects-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PAGE: Attendance ── -->
+      <section class="page" id="page-attendance">
+        <div class="stats-row" id="attendance-stats"></div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><h3>Attendance Calendar</h3><span class="card-sub">🟢 Present &nbsp;🔴 Absent &nbsp;⬜ Weekend</span></div>
+          <div id="att-calendar" class="att-calendar"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Subject-wise Attendance</h3></div>
+          <canvas id="chart-subj-att" height="180"></canvas>
+        </div>
+      </section>
+
+      <!-- ── PAGE: Chatbot ── -->
+      <section class="page" id="page-chatbot">
+        <div class="chat-layout">
+          <div class="chat-sidebar-panel">
+            <div class="chat-panel-title">💡 Quick Questions</div>
+            <div id="quick-questions-list"></div>
+          </div>
+          <div class="chat-panel">
+            <div class="chat-panel-header">
+              <div class="bot-avatar-lg">🤖</div>
+              <div>
+                <div class="bot-name">AcademIQ AI Assistant</div>
+                <div class="bot-status"><span class="status-dot"></span> Online · Powered by Claude AI</div>
+              </div>
+              <button class="clear-chat-btn" onclick="clearChat()" title="Clear chat">🗑️</button>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-wrap">
+              <textarea id="chat-input" class="chat-textarea" rows="2" placeholder="Ask about your performance, study tips, exam strategies..."></textarea>
+              <button class="chat-send-btn" onclick="sendChatMessage()" id="chat-send">➤</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PAGE: Notifications ── -->
+      <section class="page" id="page-notifications">
+        <div class="card">
+          <div class="card-header">
+            <h3>Notifications</h3>
+            <button class="text-btn" onclick="markAllRead()">Mark all as read</button>
+          </div>
+          <div id="notifications-list"></div>
+        </div>
+      </section>
+
+      <!-- ── PAGE: Reports ── -->
+      <section class="page" id="page-reports">
+        <div class="reports-cards" id="reports-grid"></div>
+        <div id="report-output" class="card" style="display:none;margin-top:16px">
+          <div class="card-header">
+            <h3 id="report-output-title">Report</h3>
+            <button class="text-btn" onclick="document.getElementById('report-output').style.display='none'">✕ Close</button>
+          </div>
+          <div id="report-output-body"></div>
+        </div>
+      </section>
+
+      <!-- ── PAGE: Teacher Dashboard ── -->
+      <section class="page" id="page-teacher-dash">
+        <div class="stats-row" id="teacher-stats"></div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><h3>Class Grade Distribution</h3></div>
+          <canvas id="chart-teacher-grades" height="200"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Student Performance Overview</h3></div>
+          <div class="table-wrap">
+            <table id="tbl-teacher-students">
+              <thead><tr><th>Student</th><th>Avg Score</th><th>Attendance</th><th>Status</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PAGE: Manage Marks ── -->
+      <section class="page" id="page-marks">
+        <div class="card">
+          <div class="card-header">
+            <h3>Marks Management</h3>
+            <button class="btn-primary-sm" onclick="openModal('modal-marks')">+ Add / Edit Marks</button>
+          </div>
+          <div class="table-wrap">
+            <table id="tbl-marks">
+              <thead><tr><th>Student</th><th>Subject</th><th>Test 1</th><th>Test 2</th><th>Assignment</th><th>Final</th><th>Total</th><th>Grade</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PAGE: Admin Dashboard ── -->
+      <section class="page" id="page-admin-dash">
+        <div class="stats-row" id="admin-stats"></div>
+        <div class="charts-2col">
+          <div class="card">
+            <div class="card-header"><h3>Grade Distribution</h3><span class="card-sub">All students</span></div>
+            <canvas id="chart-admin-grades" height="250"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Subject Averages</h3><span class="card-sub">Class performance</span></div>
+            <canvas id="chart-admin-subjects" height="250"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Top Performing Students</h3></div>
+          <div class="table-wrap">
+            <table id="tbl-admin-top">
+              <thead><tr><th>Rank</th><th>Student</th><th>Avg Score</th><th>Grade</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PAGE: User Management ── -->
+      <section class="page" id="page-users">
+        <div class="card">
+          <div class="card-header">
+            <h3>User Management</h3>
+            <button class="btn-primary-sm" onclick="openModal('modal-user')">+ Add User</button>
+          </div>
+          <div class="table-wrap">
+            <table id="tbl-users">
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main><!-- main-content -->
+  </div><!-- layout -->
+</div><!-- app -->
+
+<!-- ══ MODALS ══════════════════════════════════════════════════════════════════ -->
+
+<!-- Add Marks Modal -->
+<div class="modal-overlay" id="modal-marks" onclick="closeModalOnBg(event,'modal-marks')">
+  <div class="modal">
+    <div class="modal-header"><h2>Add / Edit Marks</h2><button onclick="closeModal('modal-marks')">✕</button></div>
+    <div class="form-group"><label>Student</label><select id="m-student" class="form-control"></select></div>
+    <div class="form-group"><label>Subject</label><select id="m-subject" class="form-control"></select></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label>Test 1 (out of 50)</label><input type="number" id="m-test1" class="form-control" min="0" max="50" placeholder="0-50"></div>
+      <div class="form-group"><label>Test 2 (out of 50)</label><input type="number" id="m-test2" class="form-control" min="0" max="50" placeholder="0-50"></div>
+      <div class="form-group"><label>Assignment (out of 25)</label><input type="number" id="m-assign" class="form-control" min="0" max="25" placeholder="0-25"></div>
+      <div class="form-group"><label>Final Exam (out of 100)</label><input type="number" id="m-final" class="form-control" min="0" max="100" placeholder="0-100"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-marks')">Cancel</button>
+      <button class="btn-primary" onclick="submitMarks()">Save Marks</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-overlay" id="modal-user" onclick="closeModalOnBg(event,'modal-user')">
+  <div class="modal">
+    <div class="modal-header"><h2>Add New User</h2><button onclick="closeModal('modal-user')">✕</button></div>
+    <div class="form-group"><label>Full Name</label><input type="text" id="u-name" class="form-control" placeholder="Full name"></div>
+    <div class="form-group"><label>Email</label><input type="email" id="u-email" class="form-control" placeholder="email@school.edu"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="u-password" class="form-control" placeholder="Min 6 characters"></div>
+    <div class="form-group"><label>Role</label>
+      <select id="u-role" class="form-control">
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Department</label><input type="text" id="u-dept" class="form-control" placeholder="e.g. Science, Arts"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-user')">Cancel</button>
+      <button class="btn-primary" onclick="submitUser()">Add User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/analytics.js"></script>
+<script src="js/attendance.js"></script>
+<script src="js/chatbot.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/marks.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
